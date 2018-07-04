@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 tf.reset_default_graph()
 import pickle
-def getImage(start, end):
+'''def getImage(start, end):
     with open("final_dataset.p", "rb") as f:
         dictname = pickle.load(f)
     images = []
@@ -20,13 +20,16 @@ def getImage(start, end):
         else:
             images.append(dictname[0][i])
             labels.append(dictname[1][i])
-    return images, labels, (end - start + 1)
+    return images, labels, (end - start + 1)'''
+with open("final_dataset.p", "rb") as f:
+        dictname = pickle.load(f)
+features = dictname[0]
+labels = dictname[1]
 
-features, labels, num = getImage(0,96)
-labels = np.array(labels, dtype=np.int32)
+#labels = np.array(labels, dtype=np.int32)
 n_classes = 1
-x = tf.placeholder(tf.float32, [None, 256,256,3])
-y = tf.placeholder(tf.int32, [5])
+x = tf.placeholder("float", [None, 256,256,3])
+y = tf.placeholder("float", [5])
 
 def neuron_layer(X, n_neurons, n_inputs, name, activation = None):
     stddev = 2/np.sqrt(n_inputs)
@@ -83,25 +86,24 @@ fc2 = neuron_layer(fc1, 100,40960, name = "FCL2", activation = "relu")
 
 output = neuron_layer(fc2, 1,100, name = "Output", activation = "relu")
 
-
+'''
 xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = output)
 loss = tf.reduce_mean(xentropy, name = "Loss")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
 training_op = optimizer.minimize(loss)
 correct = tf.nn.in_top_k(output, y, 1)
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
+'''
 
 init = tf.global_variables_initializer()
 
-
-
+op = []
+feat = features[10:15]
 with tf.Session() as sess:
     sess.run(init)
 #    out = sess.run(pool2, feed_dict = {x: features})
-    for epoch in range(400):
-        for iteration in range(5):
-            features, labels = 
+    out = sess.run(output, feed_dict = {x: feat})
+    op.append(out)
         
-    out = sess.run(output, feed_dict = {x: features, y:labels})
     
    
