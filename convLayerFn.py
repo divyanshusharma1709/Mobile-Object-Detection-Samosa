@@ -25,11 +25,13 @@ with open("final_dataset.p", "rb") as f:
         dictname = pickle.load(f)
 features = dictname[0]
 labels = dictname[1][0:86]
-
+label = []
+for i in range(86):
+    label.append(labels[i])
 #labels = np.array(labels, dtype=np.int32)
 n_classes = 1
 x = tf.placeholder("float", [1, 256,256,3])
-y = tf.placeholder(tf.int32, [None, 1])
+y = tf.placeholder(tf.int32, 1)
 
 def neuron_layer(X, n_neurons, n_inputs, name, activation = None):
     stddev = 2/np.sqrt(n_inputs)
@@ -87,7 +89,7 @@ fc2 = neuron_layer(fc1, 100,8192, name = "FCL2", activation = "relu")
 output = neuron_layer(fc2, 1,100, name = "Output", activation = "relu")
 opt = tf.nn.softmax(output)
 
-xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = output)
+xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = opt)
 loss = tf.reduce_mean(xentropy, name = "Loss")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
 training_op = optimizer.minimize(loss)
@@ -105,7 +107,7 @@ with tf.Session() as sess:
     sess.run(init)
 #    out = sess.run(pool2, feed_dict = {x: features})
     for i in range(86):
-        out = sess.run(opt, feed_dict = {x: feat[i]})
+        out = sess.run(opt, feed_dict = {x: feat[i], y: label[i]})
         op.append(out)
         
     
