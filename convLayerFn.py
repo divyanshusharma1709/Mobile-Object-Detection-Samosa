@@ -28,8 +28,8 @@ labels = dictname[1]
 
 #labels = np.array(labels, dtype=np.int32)
 n_classes = 1
-x = tf.placeholder("float", [None, 256,256,3])
-y = tf.placeholder("float", [5])
+x = tf.placeholder("float", [1, 256,256,3])
+y = tf.placeholder(tf.int32, [None, 1])
 
 def neuron_layer(X, n_neurons, n_inputs, name, activation = None):
     stddev = 2/np.sqrt(n_inputs)
@@ -82,10 +82,10 @@ pool2 = tf.nn.relu(pool2)
 #Fully connected layer
 fc1 = tf.reshape(pool2, [1, -1])
 fc1 = tf.nn.relu(fc1)
-fc2 = neuron_layer(fc1, 100,40960, name = "FCL2", activation = "relu")
+fc2 = neuron_layer(fc1, 100,8192, name = "FCL2", activation = "relu")
 
 output = neuron_layer(fc2, 1,100, name = "Output", activation = "relu")
-
+opt = tf.nn.softmax(output)
 '''
 xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = output)
 loss = tf.reduce_mean(xentropy, name = "Loss")
@@ -95,15 +95,21 @@ correct = tf.nn.in_top_k(output, y, 1)
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 '''
 
+
 init = tf.global_variables_initializer()
 
 op = []
-feat = features[10:15]
+feat = features
+for i in range(96):
+    feat = np.expand_dims(feat[0][i], axis=0)
+x = feat[0]
+x = np.expand_dims(x,axis = 0)
 with tf.Session() as sess:
     sess.run(init)
 #    out = sess.run(pool2, feed_dict = {x: features})
-    out = sess.run(output, feed_dict = {x: feat})
-    op.append(out)
+    for i in range(96):
+        out = sess.run(opt, feed_dict = {x: feat[0][i]})
+        op.append(out)
         
     
    
