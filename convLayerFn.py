@@ -32,6 +32,8 @@ for i in range(225):
         del(features[i])
         del(labels[i])
 '''
+for i in range(len(features)):
+    features[i] = np.expand_dims(features[i], axis=0)
 from sklearn.model_selection import train_test_split
 features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size = 0.4, random_state = 42)
 #labels = np.array(labels, dtype=np.int32)
@@ -99,19 +101,17 @@ xentropy = tf.nn.softmax_cross_entropy_with_logits(labels = y, logits = opt)
 loss = tf.reduce_mean(xentropy, name = "Loss")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
 training_op = optimizer.minimize(loss)
-correct = tf.equal(tf.argmax(y),tf.argmax(output))
+correct = tf.equal(tf.argmax(y),tf.argmax(opt))
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 
 init = tf.global_variables_initializer()
 
 accurate = []
-for i in range(len(features_train)):
-    features_train[i] = np.expand_dims(features_train[i], axis=0)
 with tf.Session() as sess:
     sess.run(init)
     for i in range(len(features_train)):
         optimize = sess.run(training_op, feed_dict = {x: features_train[i], y: [labels_train[i]]})
         loss_ = sess.run(loss, feed_dict = {x: features_train[i], y: [labels_train[i]]})      
-        acc = sess.run(accuracy, feed_dict = {x: features_train[i], y: [labels_train[i]]})
+        acc = sess.run(accuracy, feed_dict = {x: features_test[i], y: [labels_test[i]]})
         accurate.append(acc)
    
