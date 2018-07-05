@@ -21,15 +21,21 @@ import pickle
             images.append(dictname[0][i])
             labels.append(dictname[1][i])
     return images, labels, (end - start + 1)'''
-with open("final_dataset.p", "rb") as f:
+with open("new_data.p", "rb") as f:
         dictname = pickle.load(f)
 features = dictname[0]
-labels = dictname[1][0:86]
-label = []
-for i in range(86):
-    label.append(labels[i])
+labels = dictname[1]
+'''dictname = [features, labels]
+pickle.dump(dictname, open("new_data.p", "wb"))
+for i in range(225):
+    if(np.shape(features[i]) != (256,256,3)):
+        del(features[i])
+        del(labels[i])
+'''
+from sklearn.model_selection import train_test_split
+features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size = 0.4, random_state = 42)
 #labels = np.array(labels, dtype=np.int32)
-n_classes = 1
+n_classes = 1.0
 x = tf.placeholder("float", [1, 256,256,3])
 y = tf.placeholder(tf.int32, 1)
 
@@ -88,27 +94,24 @@ fc2 = neuron_layer(fc1, 100,8192, name = "FCL2", activation = "relu")
 
 output = neuron_layer(fc2, 1,100, name = "Output", activation = "relu")
 opt = tf.nn.softmax(output)
-
-xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = opt)
+labels_max = tf.reduce_max(labels)
+xentropy = tf.nn.softmax_cross_entropy_with_logits(labels = y, logits = opt)
 loss = tf.reduce_mean(xentropy, name = "Loss")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
 training_op = optimizer.minimize(loss)
-correct = tf.nn.in_top_k(output, y, 1)
+correct = tf.equal(tf.argmax(y),tf.argmax(output))
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
-
 
 init = tf.global_variables_initializer()
 
-op = []
-feat = features
-for i in range(96):
-    feat[i] = np.expand_dims(feat[i], axis=0)
+accurate = []
+for i in range(len(features_train)):
+    features_train[i] = np.expand_dims(features_train[i], axis=0)
 with tf.Session() as sess:
     sess.run(init)
-#    out = sess.run(pool2, feed_dict = {x: features})
-    for i in range(86):
-        out = sess.run(opt, feed_dict = {x: feat[i], y: label[i]})
-        op.append(out)
-        
-    
+    for i in range(len(features_train)):
+        optimize = sess.run(training_op, feed_dict = {x: features_train[i], y: [labels_train[i]]})
+        loss_ = sess.run(loss, feed_dict = {x: features_train[i], y: [labels_train[i]]})      
+        acc = sess.run(accuracy, feed_dict = {x: features_train[i], y: [labels_train[i]]})
+        accurate.append(acc)
    

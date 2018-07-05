@@ -8,13 +8,14 @@ Created on Thu Jun 21 23:28:52 2018
 from PIL import Image
 import os, sys
 width = height = 256
-directory = "/home/divyanshu/Downloads/samosa/"
-def getImage(start, end, directory)
+directory = "/home/divyanshu/Downloads/random/"
 for image in os.listdir(directory):
     print('Resizing image ' + image)
  
     # Open the image file.
+    img = Image.open(os.path.join(directory, image)).convert('RGB').save(os.path.join(directory, image))
     img = Image.open(os.path.join(directory, image))
+
  
     # Resize it.
     img = img.resize((width, height), Image.BILINEAR)
