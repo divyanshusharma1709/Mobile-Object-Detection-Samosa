@@ -5,25 +5,17 @@ Created on Sat Jun 23 12:13:14 2018
 
 @author: divyanshu
 """
-import tensorflow as tf
+import tensorflow as tf,cv2
 import numpy as np
 tf.reset_default_graph()
+directory = "/home/divyanshu/Documents/samosa"
 import pickle
-'''def getImage(start, end):
-    with open("final_dataset.p", "rb") as f:
-        dictname = pickle.load(f)
-    images = []
-    labels = []
-    for i in range(end):
-        if(i < start):
-            continue
-        else:
-            images.append(dictname[0][i])
-            labels.append(dictname[1][i])
-    return images, labels, (end - start + 1)'''
 with open("new_data.p", "rb") as f:
         dictname = pickle.load(f)
 features = dictname[0]
+for i in range(225):
+    features[i] = cv2.normalize(features[i],features[i], alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+
 labels = dictname[1]
 '''dictname = [features, labels]
 pickle.dump(dictname, open("new_data.p", "wb"))
@@ -37,9 +29,9 @@ for i in range(len(features)):
 from sklearn.model_selection import train_test_split
 features_train, features_test, labels_train, labels_test = train_test_split(features, labels, test_size = 0.4, random_state = 42)
 #labels = np.array(labels, dtype=np.int32)
-n_classes = 1.0
+n_classes = 2
 x = tf.placeholder("float", [1, 256,256,3])
-y = tf.placeholder(tf.int32, 1)
+y = tf.placeholder(tf.int32, None)
 
 def neuron_layer(X, n_neurons, n_inputs, name, activation = None):
     stddev = 2/np.sqrt(n_inputs)
@@ -90,16 +82,15 @@ conv3 = conv_layer(pool1, weights['wc3'], bias['bc3'],strides = [1,2,2,1])
 pool2 = max_pool_layer(conv3,[4,4],[1,2,2,1])
 pool2 = tf.nn.relu(pool2)
 #Fully connected layer
-fc1 = tf.reshape(pool2, [1, -1])
+fc1 = tf.reshape(pool2, [1, -1]) #Check this also
 fc1 = tf.nn.relu(fc1)
 fc2 = neuron_layer(fc1, 100,8192, name = "FCL2", activation = "relu")
 
-output = neuron_layer(fc2, 1,100, name = "Output", activation = "relu")
-opt = tf.nn.softmax(output)
+opt = neuron_layer(fc2, 2,100, name = "Output")
 labels_max = tf.reduce_max(labels)
-xentropy = tf.nn.softmax_cross_entropy_with_logits(labels = y, logits = opt)
+xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y, logits = opt)
 loss = tf.reduce_mean(xentropy, name = "Loss")
-optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
+optimizer = tf.train.AdamOptimizer(learning_rate = 0.001)
 training_op = optimizer.minimize(loss)
 correct = tf.equal(tf.argmax(y),tf.argmax(opt))
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
@@ -107,11 +98,34 @@ accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 init = tf.global_variables_initializer()
 
 accurate = []
+oplist = []
+net_loss = []
+MODEL_NAME = 'convnet'
+
 with tf.Session() as sess:
     sess.run(init)
+    saver = tf.train.Saver()
+    
     for i in range(len(features_train)):
-        optimize = sess.run(training_op, feed_dict = {x: features_train[i], y: [labels_train[i]]})
-        loss_ = sess.run(loss, feed_dict = {x: features_train[i], y: [labels_train[i]]})      
-        acc = sess.run(accuracy, feed_dict = {x: features_test[i], y: [labels_test[i]]})
-        accurate.append(acc)
-   
+        out = sess.run(opt, feed_dict = {x: features_train[i]})
+        oplist.append(out)
+        
+    for epochs in range(100):
+        losslist = []
+        for i in range(len(features_train)):
+            optimize = sess.run(training_op, feed_dict = {x: features_train[i], y: [labels_train[i]]})
+            loss_ = sess.run(loss, feed_dict = {x: features_train[i], y: [labels_train[i]]})   
+            losslist.append(loss_)
+            print(loss_)
+        net_loss.append(losslist)
+        for i in range(len(features_test)):
+            acc = sess.run(accuracy, feed_dict = {x: features_test[i], y: [labels_test[i]]})
+            accurate.append(acc)
+    saver.save(sess, directory)
+            
+            
+ctr = 0
+for i in range(len(losslist)):
+    if(losslist[i] != 0.0):
+        ctr = ctr + 1
+perzero = (ctr/len(losslist)) * 100
