@@ -8,10 +8,10 @@ Created on Thu Jul  5 10:36:22 2018
 import os, pickle, numpy as np
 from PIL import Image
 imlist = []
-directory = "/home/divyanshu/Documents/random_images_resized"
+directory = "/home/divyanshu/Documents/resized_samosa"
 for image in os.listdir(directory):
     img = Image.open(os.path.join(directory, image))
     imlist.append(img)
-data = [imlist, np.zeros(136)]
-pickle.dump(data, open("data.p",'wb'))
+data = [imlist, np.zeros(96)]
+pickle.dump(data, open("data_sam.p",'wb'))
     
