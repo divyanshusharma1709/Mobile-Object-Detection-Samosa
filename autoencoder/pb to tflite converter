@@ -1,0 +1,28 @@
+toco \
+--input_file=frozen_model.pb \
+--input_format=TENSORFLOW_GRAPHDEF \
+--output_format=TFLITE \
+--input_type=FLOAT \
+--input_arrays=Input \
+--output_arrays=CL4 \
+--input_shapes=1,256,256,3 \
+--output_file=model_in_up.tflite
+
+
+tf.contrib.lite.toco_convert(
+    input_file=frozen_model.pb \
+    input_format=TENSORFLOW_GRAPHDEF \
+    output_format=TFLITE \
+    input_type=FLOAT \
+    input_arrays=Placeholder \
+    output_arrays=add_1 \
+    input_shapes=1,256,256,3 \
+    output_file=model.tflite
+)
+
+
+tflite_convert \
+  --output_file=/home/divyanshu/Documents/samosa/autoencoder/LTwo_Loss.tflite \
+  --graph_def_file=/home/divyanshu/Documents/frozen_model.pb \
+  --input_arrays=LTwo \
+  --output_arrays=Loss
