@@ -1,5 +1,5 @@
 # samosa
-Samosa classifier
+Samosa detector
 
 ## What it does: 
 This Android app aims to implement One-Class Classification locally on an Android device using TFlite. It uses an Autoencoder to find out if the image is a Samosa
@@ -11,4 +11,8 @@ This Android app aims to implement One-Class Classification locally on an Androi
 ## Author(s):
 **Divyanshu Sharma**
 
-![Link to Images](docs/CONTRIBUTING.md)
+## Images:
+![Images](autoencoder/images/Image_1.jpeg)
+![Images](autoencoder/images/Image_2.jpeg)
+![Images](autoencoder/images/Image_3.jpeg)
+
