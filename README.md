@@ -13,6 +13,3 @@ This Android app aims to implement One-Class Classification locally on an Androi
 
 ## Images:
 ![Images](autoencoder/images/Image_1.jpeg)
-![Images](autoencoder/images/Image_2.jpeg)
-![Images](autoencoder/images/Image_3.jpeg)
-
